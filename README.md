@@ -1,6 +1,6 @@
 # MyMPDClientRepo
 
-# Music player for MPD client
+*****Music player for MPD client*****
 
 ****install instructions:****
 
