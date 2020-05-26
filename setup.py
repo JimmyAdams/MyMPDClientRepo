@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from distutils.core import setup
 
 setup(
     name='PlayerClientMPD',
@@ -8,7 +8,7 @@ setup(
     author_email='xadame41@stud.fit.vutbr.cz',
     description='Player MPD',
     package_data = {"PlayerClientMPD" : ["playlists", "icons/*"]},
-    packages=find_packages(),
+    packages = ["PlayerClientMPD"],
     install_requires=['numpy >= 1.11.1',
      'PyQt5',
      'python-vlc',
