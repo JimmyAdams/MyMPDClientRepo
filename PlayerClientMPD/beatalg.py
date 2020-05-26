@@ -6,9 +6,7 @@ import scipy.io.wavfile as wav
 from scipy import misc, cos, pi
 from os import path
 from pydub import AudioSegment
-import soundfile as sf
 import wave
-import matplotlib.pyplot as plt
 import time
 
 def stereoToMono(audiodata):

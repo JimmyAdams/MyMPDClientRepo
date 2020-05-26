@@ -9,16 +9,14 @@ import sys, os
 from os.path import basename
 from PyQt5 import QtGui
 from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtGui import QCloseEvent
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QWidget, QMessageBox, QPushButton, QApplication, QGridLayout, QListWidget, QMessageBox, QToolBar, QDialogButtonBox
-from PyQt5.QtWidgets import QApplication,QVBoxLayout, QHBoxLayout, QGroupBox, QScrollArea, QVBoxLayout, QGroupBox, QLabel, QPushButton, QFormLayout
+from PyQt5.QtWidgets import QWidget, QMessageBox, QPushButton,  QGridLayout, QListWidget, QToolBar, QDialogButtonBox
+from PyQt5.QtWidgets import QApplication,QVBoxLayout, QHBoxLayout, QGroupBox, QScrollArea,  QLabel, QFormLayout
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtWidgets import QTableWidget,QTableWidgetItem
-#from pygame import mixer
 from itertools import cycle
 from collections import deque #iterate reversely
 from mutagen.id3 import *
@@ -641,9 +639,13 @@ class MusicPlayer(QWidget):
         self.buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, Qt.Horizontal, self)
         form.addRow(self.buttons)
         self.buttons.accepted.connect(self.saveButton)
+        self.buttons.rejected.connect(self.rejectButton)
         self.dialog.setWindowTitle("Dialog")
         self.dialog.setWindowModality(Qt.ApplicationModal)
         self.dialog.exec_()
+
+    def rejectButton(self):
+        self.dialog.close()
 
     def saveButton(self):
         print("saving metadata")

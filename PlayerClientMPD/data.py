@@ -5,8 +5,6 @@ from mutagen.mp3 import MP3 #metadata manipulation
 from mutagen.id3 import *
 import musicbrainzngs
 import eyed3
-import librosa
-import scipy.stats
 import json
 import objectpath
 
