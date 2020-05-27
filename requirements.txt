@@ -1,0 +1,15 @@
+audio-metadata
+audioread
+eyeD3
+more-itertools
+musicbrainzngs
+mutagen
+numpy
+objectpath
+PyQt5-sip
+python-vlc
+scipy
+Wave
+wavinfo
+pydub
+SoundFile
