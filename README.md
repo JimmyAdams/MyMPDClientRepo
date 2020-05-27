@@ -6,7 +6,7 @@
 
 ****please check for package****
 
-  pip3 install setuptools
+  pip3 install PyQt5
   
   python3 setup.py install --user
 
