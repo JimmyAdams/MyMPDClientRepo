@@ -12,8 +12,11 @@
 
 ****after downloading all dependencies****
 
-  cd PlayerClientMPD
-
 ****run python app with:****
 
   python3 main.py
+
+
+****if there are any problem run pls:****
+
+  pip3 install -r requirements.txt
