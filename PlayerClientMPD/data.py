@@ -1,10 +1,5 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget,QTableWidget,QTableWidgetItem
-import mutagen
-from mutagen.mp3 import MP3 #metadata manipulation
-from mutagen.id3 import *
 import musicbrainzngs
-import eyed3
 import json
 import objectpath
 
@@ -34,8 +29,6 @@ def getMetadata(artist, release):
         "https://github.com/alastair/python-musicbrainzngs/",
     )
 
-    #wjson = json.loads(ss)
-    #jsonnn_tree = objectpath.Tree(wjson)
 
     # getting data from web
     result = musicbrainzngs.search_releases(artist=artist, tracks=release,limit=1)
@@ -73,9 +66,7 @@ def getMetadata(artist, release):
                 if 'script' in (repre):
                     finalList.update({"script":repre['script']})
             if 'artist-credit' == items:
-                #print(repre)
-                #a = json.dumps(release[items], indent=4, sort_keys=True)
-                #print(a)
+
                 try:
                     tree = objectpath.Tree(release[items])
                     ent = tree.execute("$.artist[0]")

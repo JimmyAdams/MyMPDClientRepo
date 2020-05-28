@@ -66,23 +66,23 @@ def getBPM(songName):#song as file
 
 
     n = len(dft)
-    nbands = len(bandlimits)
+    bandCount = len(bandlimits)
 
-    bl = []
-    br = []
+    valuesA = []
+    valuesB = []
 
-    for i in range(0, nbands-1): # differ signal to bands
-        bl.append(int(floor(bandlimits[i]/maxfreq*n/2)+1))
-        br.append(int(floor(bandlimits[i+1]/maxfreq*n/2)))
+    for i in range(0, bandCount-1): # differ signal to bands
+        valuesA.append(int(floor(bandlimits[i]/maxfreq*n/2)+1))
+        valuesB.append(int(floor(bandlimits[i+1]/maxfreq*n/2)))
 
-    br.append(int(floor(n/2)))
-    bl.append(int(floor(bandlimits[nbands-1]/maxfreq*n/2)+1))
+    valuesB.append(int(floor(n/2)))
+    valuesA.append(int(floor(bandlimits[bandCount-1]/maxfreq*n/2)+1))
 
-    output = zeros((n,nbands),dtype=complex)
+    output = zeros((n,bandCount),dtype=complex)
 
-    for a in range(0, nbands): #getting to matrix
-        output[bl[a]:br[a], a] = dft[bl[a]:br[a]]
-        output[n+1-br[a]:n+1-bl[a],a] = dft[n+1-br[a]:n+1-bl[a]]
+    for a in range(0, bandCount): #getting to matrix
+        output[valuesA[a]:valuesB[a], a] = dft[valuesA[a]:valuesB[a]]
+        output[n+1-valuesB[a]:n+1-valuesA[a],a] = dft[n+1-valuesB[a]:n+1-valuesA[a]]
 
     output[0][0] = 0
 
@@ -91,33 +91,33 @@ def getBPM(songName):#song as file
         smoothing signal, get rid of zeros
         used formula raised cosine
     """
-    winlength = 0.2
-    hannlen = winlength*2*maxfreq;
-    hannlen = int(hannlen)
+    winLength = 0.2
+    hanLength = winLength*2*maxfreq;
+    hanLength = int(hanLength)
 
     hann = zeros((n,1),dtype=complex)
 
-    for a in range(0, hannlen-1): # application of Hanning window
-        val = (cos(a*pi/hannlen/2))
+    for a in range(0, hanLength-1): # application of Hanning window
+        val = (cos(a*pi/hanLength/2))
         hann[a] = power(val, 2)
 
-    funcW = zeros((n,nbands),dtype=complex) # convert bands to time part
-    for i in range(0, nbands):
+    funcW = zeros((n,bandCount),dtype=complex) # convert bands to time part
+    for i in range(0, bandCount):
         funcW[:,i] = real(ifft(output[:,i]))
 
-    freq = zeros((n,nbands),dtype=complex)
-    for i in range(0, nbands-1): #getting absulte value from negative numbers
+    freq = zeros((n,bandCount),dtype=complex)
+    for i in range(0, bandCount-1): #getting absulte value from negative numbers
         for j in range(0, n):
             if(funcW[j,i] < 0):
                 funcW[j,i] = - funcW[j,i]
         freq[:,i] = fft(funcW[:,i]) # set values back to frquencies
 
         # temp variables as matrices
-    filtered = zeros((n,nbands),dtype=complex)
-    output2 = zeros((n,nbands),dtype=complex)
+    filtered = zeros((n,bandCount),dtype=complex)
+    output2 = zeros((n,bandCount),dtype=complex)
 
     #correlation of signals
-    for i in range(0, nbands-1):
+    for i in range(0, bandCount-1):
         filtered[:,i] = freq[:,i]*fft(hann[:,0])
         output2[:,i] = real(ifft(filtered[:,i]))
 
@@ -125,9 +125,9 @@ def getBPM(songName):#song as file
     n = len(output2)
     sig = output2
 
-    output3 = zeros((n,nbands),dtype=complex)
+    output3 = zeros((n,bandCount),dtype=complex)
 
-    for i in range(0, nbands-1):# get only positive values from sub
+    for i in range(0, bandCount-1):# get only positive values from sub
         for j in range(4, n-1):
             d = sig[j,i] - sig[j-1,i]
 
@@ -141,9 +141,9 @@ def getBPM(songName):#song as file
 
     npulses = 3;
     sc = 0.75
-    dft = zeros((n,nbands),dtype=complex)
+    dft = zeros((n,bandCount),dtype=complex)
 
-    for i in range(0, nbands-1):
+    for i in range(0, bandCount-1):
         dft[:,i] = fft(sig[:,i])
 
     maxe = 0
@@ -168,28 +168,12 @@ def getBPM(songName):#song as file
         dftfil = fft(fil) # filter value
 
 
-        for i in range(0, nbands-1): # goes on convolution
+        for i in range(0, bandCount-1): # goes on convolution
             val = (abs(dftfil[:,0]*dft[:,i])) # value of energie
             x = power(val, 2)
             e = e + sum(x)
 
         if e > maxe: # get max energy and save bpm at this energy
-            sbpm = bpm*sc#scaling edit
+            sbpm = bpm*sc
             maxe = e
-        graph[index] = e
-        index = index + 1
-    '''
-    Plotting of graphs in thesis
-    plt.plot(graph)
-    plt.ylabel('Hodnoty energie')
-    plt.xlabel('BPM')
-    plt.show()
-    '''
     return sbpm
-
-
-#start_time = time.time()
-
-#print(getBPM("01) Mozart_Vivaldi - Allegro.wav"))
-
-#print("--- %s seconds ---" % (time.time() - start_time))

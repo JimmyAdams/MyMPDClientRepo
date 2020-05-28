@@ -70,7 +70,6 @@ class Song():
 """
 
 class Playlist():
-    #allPlaylists = []
     def __init__(self):
         self.name = "" #unique to each instance
         self.songs = [] #songs with path or list of songs
@@ -146,7 +145,25 @@ class Playlist():
         """
         self.songs = [value for value in list1 if value not in list2]
 
-    def removeSongFromPlaylist(self, songName):
+    def addSongT(self, songObject):
+        """ add songO to playlist
+
+            Parameters
+            ----------
+            songObject : Song()
+        """
+        self.songs.append(songObject)
+
+
+    def getLength(self):
+        """ 
+            Return
+            ----------
+            size of playlist
+        """
+        return len(self.songs)
+
+    def deleteSongT(self, songName):
         """ Removes song from playlist
 
             Parameters
@@ -154,34 +171,35 @@ class Playlist():
             songName : str
                 Name of song to delete
         """
-        self.songs.remove(songName)
-
-    def addSongT(self, songObject):
-        self.songs.append(songObject)
-
-    def sortSongs(self):
-        self.songs.sort()
-
-    def getLength(self):
-        return len(self.songs)
-
-    def deleteSongT(self, songName):
         for x in range(len(self.songs)):
             if(self.songs[x].getName() == songName):
                 self.songs.pop(x)#delete playlist
-                break#break, deletes last item and dynamically lowers index so crash appears
+                break#break, deletes last item and dynamically lowers index
 
     def getSongObjectT(self, songName):
+        """ Returns Song instance
+
+            Parameters
+            ----------
+            songName : str
+                Name of song to delete
+        """
         for x in range(len(self.songs)):
             if(self.songs[x].getName() == songName):
                 return(self.songs[x])#delete playlist
 
-        #if not found
-        print("Not found song object")
+        #if not found return empty Song
         return Song()
 
 
-    def isExisting(self, songObject):#find if is song in playlist
+    def isExisting(self, songObject):
+        """ Find if is song in playlist
+
+            Parameters
+            ----------
+            songObject : Song()
+                Check existence of song
+        """
         songName = songObject.getName()
         exist = False
         for x in range(len(self.songs)):
@@ -204,7 +222,7 @@ class Playlist():
             -------
             list : list of songs
         """
-        return self.songs #maybe next func to return for QComboBox
+        return self.songs 
 
     def printAllsongs(self):#debugging
         for i in range(len(self.songs)):
@@ -229,24 +247,17 @@ class Playlist():
 
     Attributes
     ----------
-    songsList : list
-        list of songs in main playlist from system
     allPlaylists : list
         the list of names of playlists
-    playLists : list
-        list of songs in playlist for operations and export
 """
 
 class MusicPlayer(QWidget):
-    songsList = [] # class variable shared by all instances
     allPlaylists = []
     playLists = [] # users created class of playlists
 
 
     def __init__(self):
         super().__init__()
-        #mixer.init()
-        #mixer.pre_init(44100, -16, 2, 256)
 
         self.pickedSong = "" # currently playing song
         self.playlist2CurrentSong = "" #picked song in second playlist, used only for erase
@@ -269,48 +280,38 @@ class MusicPlayer(QWidget):
         #run saving at end
         atexit.register(self.loadPermanentData)
 
-        try:
+        try:# init file to save data
             self.file = open('playlists', 'wb')
         except:
             pass
         self.initUI()
 
     def initSongList(self):
-        """ Function for initialization of songsList
+        """ Function for initialization of List
             user has to pick directory from system
             path to file is parsed (realpath)
             MP3 and WAV formats get accepted
 
         """
-        #TODO: gets gtkdialog error
+        #TODO: gets gtkdialog prints warning = module problem
         self.filesList = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
-        #gtk_window_set_transient_for(QFileDialog)
-        #print(self.filesList)
-        #self.filesList = "/home/jakub/Music/No Doubt-Tragic Kingdom"
         os.chdir(self.filesList)
         filesLists= os.listdir()
         self.realpath = filesLists
         self.mainPlaylist = Playlist()
         for file in filesLists:
             if (file.lower().endswith(".mp3")):#case insensitive
-                #tempSong = Song(file, str(self.filesList + "/" + file))
                 tempSong = Song(file, os.path.join(self.filesList, file))
                 if(not self.mainPlaylist.isExisting(tempSong)):
                     self.mainPlaylist.addSongT(tempSong)
 
 
-        #self.songsList.sort()
-        iterSongList = cycle(self.songsList)
         #songs in main playlist
         self.listWidget.clear()
-        #for song in self.songsList:#fill list with songs
-            #self.listWidget.addItem(song)
         tempMain = self.mainPlaylist.getAllSongs()
         for song in tempMain:
             self.listWidget.addItem(song.getName())
 
-        #print("Main playlist")
-        #self.mainPlaylist.printAllsongs()
 
     def listview_clicked(self):#set variable with picked song
         """
@@ -318,8 +319,6 @@ class MusicPlayer(QWidget):
 
         """
         item = self.listWidget.currentItem()
-        #self.pickedSong = item.text()
-        #self.pickedSongObject = Song("","")
         self.pickedSongObject = self.mainPlaylist.getSongObjectT(item.text())
         self.mainPLstatus = 1
         self.sidePLstatus = 0
@@ -351,7 +350,6 @@ class MusicPlayer(QWidget):
 
         toolButton = QToolButton()
         toolButton.setText("Edit metadata")
-        #toolButton.setCheckable(True)
         toolButton.setAutoExclusive(True)
         toolButton.clicked.connect(self.showdialog)
         toolBar.addWidget(toolButton)
@@ -366,16 +364,21 @@ class MusicPlayer(QWidget):
         # button for delete playlist
         btnDeletePlaylist = QToolButton(self)
         btnDeletePlaylist.setText('Delete Playlist')
-        #btnDeletePlaylist.move(620, 30)
         btnDeletePlaylist.setAutoExclusive(True)
         btnDeletePlaylist.clicked.connect(self.deletePlaylistAction)
         toolBar.addWidget(btnDeletePlaylist)
+
+        #btn for about info
+        btnShowAbout = QToolButton(self)
+        btnShowAbout.setText('Info')
+        btnShowAbout.setAutoExclusive(True)
+        btnShowAbout.clicked.connect(self.showAboutBox)
+        toolBar.addWidget(btnShowAbout)
 
         #button to play music
         btnPlay = QPushButton(self)
         btnPlay.setIcon(QIcon(QPixmap("icons/iconPlay.svg")))
         btnPlay.move(20, 30)
-        #btnPlay.setIconSize(QSize(20,20))
         btnPlay.resize(30,30)
         btnPlay.clicked.connect(self.play)
 
@@ -435,7 +438,7 @@ class MusicPlayer(QWidget):
         btnMergePlaylist.clicked.connect(self.mergePlaylistsAction)
 
         # button for intersection for playlist
-        btnInterPlaylist = QPushButton('Inter playlists',self)
+        btnInterPlaylist = QPushButton('Intersect playlists',self)
         btnInterPlaylist.move(620, 110)
         btnInterPlaylist.clicked.connect(self.interPlaylistsAction)
 
@@ -480,7 +483,7 @@ class MusicPlayer(QWidget):
                                      "{"
                                      "border : 3px solid grey;"
                                      "}")
-        #self.initSongList()
+
 
         #Resize width and height
         self.listWidget.resize(240,370)
@@ -495,10 +498,9 @@ class MusicPlayer(QWidget):
         self.playlistWidget.resize(240,370)
         self.playlistWidget.move(300, 250)
         self.playlistWidget.clicked.connect(self.playlistview_clicked)
-        #self.playlistWidget
 
         #Song Info Box
-        self.groupbox = QGroupBox("Song Info",self)#QGroupBox("Song Info",self)
+        self.groupbox = QGroupBox("Song Info",self)
         self.groupbox.move(50, 60)
         self.groupbox.resize(500, 170)
         self.hbox = QHBoxLayout()
@@ -510,8 +512,7 @@ class MusicPlayer(QWidget):
             self.infoLabels.append(QLabel(""))
             self.vbox.addWidget(self.infoLabels[i])
 
-        #self.groupbox.setLayout(vbox)
-        #groupbox.setFont(QtGui.QFont("Sanserif", 15))
+
         self.imageAlbumLabel = QLabel(self)
         self.v2box.addWidget(self.imageAlbumLabel)
         self.v2box.setAlignment(Qt.AlignTop)
@@ -521,17 +522,16 @@ class MusicPlayer(QWidget):
         self.hbox.addLayout(self.vbox)
         self.groupbox.setLayout(self.hbox)
 
-        #vbox.addWidget(label)
 
         #init metadata databse table
         self.tableWidgetMeta = QTableWidget(self)
         self.tableWidgetMeta.move(550,270)
         self.tableWidgetMeta.resize(240,350)
-
+        #self.initSongList()
 
         #self.setGeometry(100, 100, 750, 400)
         self.setFixedSize(800, 660)
-        self.setWindowTitle('Gnome Music Player Clone')
+        self.setWindowTitle('Spec MPD Client')
 
         self.show()
 
@@ -551,7 +551,6 @@ class MusicPlayer(QWidget):
             self.labelBPM.setText("BPM: " + str(bpm))
 
             try:
-                #tags =  EasyID3(self.filesList + "/" + self.pickedSong)
                 tags = EasyID3(path)
             except Exception:
                 return
@@ -565,12 +564,10 @@ class MusicPlayer(QWidget):
         form = QFormLayout(self.dialog)
         song = self.pickedSongObject.getPath()
         try:
-            #tags =  EasyID3(self.filesList + "/" + self.pickedSong)
             tags = EasyID3(song)
         except Exception:
             return #no id3format
-        #print(tags.pprint())
-        #add album
+
         try:
             titleE = tags['title'][0]
         except:
@@ -651,7 +648,6 @@ class MusicPlayer(QWidget):
         print("saving metadata")
         song = self.pickedSongObject.getPath()
         try:
-            #tags =  EasyID3(self.filesList + "/" + self.pickedSong)
             tags = EasyID3(song)
         except Exception:
             return #no id3format
@@ -677,27 +673,62 @@ class MusicPlayer(QWidget):
         self.dialog.close()
         return
 
+    def showAboutBox(self):
+        text = ""
+        text += "This is Spec MPD Client\n"
+        text += "Click icon with folder for selecting\n"
+        text += " directory with mp3 files\n"
+        text += "\n"
+        text += "To add song to playlist select or create playlist\n"
+        text += "and then click button add to playlist to succes\n"
+        text += "\n"
+        text += "For deleting playlist, click button and choose\n"
+        text += "from showed list of playlists\n"
+        text += "\n"
+        text += "To erase song, activate song with click\n"
+        text += "in playlist list in middle and click button\n"
+        text += "\n"
+        text += "To edit local files, click edit metadata\n"
+        text += "\n"
+        text += "If no metadata were downloaded in box table on\n"
+        text += "right side, pls edit correct song name and artists name\n"
+        text += "\n"
+        text += "Operations with playlists a, b:\n"
+        text += "Intersect -> a AND b\n"
+        text += "Merge -> a OR b\n"
+        text += "Diff -> a - b\n"
+        text += "\n"
+        text += "Get BPM, shows  bpm in box and writes to mp3\n"
+        text += "\n"
+        text += "Export PL -> Album, changes metadata and export to album\n"
+        QMessageBox.about(self, "Info", text)
+        return
+
     def addSongToPlaylistAction(self):
         """ Add picked song to playlist
 
         """
+        found = True
         if(self.mainPLstatus == 0):
             QMessageBox.about(self, "Warning", "Cannot add to side playlist from main")
             return
 
-        #if hasattr(self.pickedSongObject, 'getName'):
-        if(self.pickedSongObject):
+        if(self.pickedSongObject):#song existence
             for x in range(len(self.allPlaylists)):
                 if(self.allPlaylists[x].getNameOfPlaylist() == self.currentPlaylist.getNameOfPlaylist()):#current playlist
-                    self.allPlaylists[x].addSongToPlaylist(self.pickedSongObject)
+                    if(not self.currentPlaylist.isExisting(self.pickedSongObject)):
+                        #self.mainPlaylist.addSongT(tempSong)
+                        self.allPlaylists[x].addSongT(self.pickedSongObject)
+                    found = False
                     self.refreshPlaylistWidget()
+        if(found):
+            QMessageBox.about(self, "Add error", "Please choose/create playlist to add song")
 
     def eraseSongFromPlaylistAction(self):
         """ Erase Picked song from playlist
 
         """
         if(self.playlist2CurrentSong):
-            #print(self.playlist2CurrentSong)
             for x in range(len(self.allPlaylists)):
                 if(self.allPlaylists[x].getNameOfPlaylist() == self.currentPlaylist.getNameOfPlaylist()):#current playlist
                     self.allPlaylists[x].deleteSongT(self.playlist2CurrentSong)
@@ -731,18 +762,6 @@ class MusicPlayer(QWidget):
             self.tableWidgetMeta.setItem(i,0, QTableWidgetItem(key))
             self.tableWidgetMeta.setItem(i,1, QTableWidgetItem(value))
             i = i + 1
-
-
-    def savePermanent(self):
-        """
-            Permanent objects
-        """
-        try:
-            pickle.dump(self.allPlaylists, self.f)
-            self.f.close()
-        except:
-            pass
-        #print("Saving data")
 
 
     def mergePlaylistsAction(self):
@@ -902,6 +921,11 @@ class MusicPlayer(QWidget):
             return
         if not text:
             return
+
+        for x in range(len(self.allPlaylists)):
+            if(self.allPlaylists[x].getNameOfPlaylist() == text):
+                 QMessageBox.about(self, "Playlist existing", "Playlist already exists")
+                 return
         tempPlay = Playlist()
         tempPlay.setNameToPlaylist(str(text))
         self.allPlaylists.append(tempPlay)
@@ -929,7 +953,6 @@ class MusicPlayer(QWidget):
             return
         nameOfDeletedPlaylist = str(item)
 
-        #print(len(self.allPlaylists))
         for x in range(len(self.allPlaylists)):
             if(self.allPlaylists[x].getNameOfPlaylist() == nameOfDeletedPlaylist):
                 self.allPlaylists.pop(x)#delete playlist
@@ -947,9 +970,8 @@ class MusicPlayer(QWidget):
 
     def exportPlaylistAction(self):
         if(not self.currentPlaylist):
-            #print("not selected playlist")
             return
-        #print(self.currentPlaylist.getLength())
+
         if(self.currentPlaylist.getLength() == 0):
             QMessageBox.about(self, "Cant export", "Playlist to export is empty")
             return
@@ -967,7 +989,6 @@ class MusicPlayer(QWidget):
             if (name.lower().endswith(".mp3")):
                 try:
                     tags =  EasyID3(path)
-                    #tags = EasyID3()
                 except Exception:
                     tags =  EasyID3()
 
@@ -1026,7 +1047,7 @@ class MusicPlayer(QWidget):
         """
         name = self.pickedSongObject.getName()
         #add path
-        #song = ("/home/jakub/Music/The Cure - 1979 Boys Don't Cry/"+self.pickedSong)
+
         song = self.pickedSongObject.getPath()
 
         if (name.lower().endswith(".mp3")):
@@ -1100,10 +1121,7 @@ class MusicPlayer(QWidget):
 
         for idx in range(len(self.allPlaylists)):
             if self.allPlaylists[idx].getNameOfPlaylist() == nameOfPickedPlaylist:
-                #print(self.allPlaylists[idx].getNameOfPlaylist())
                 self.currentPlaylist = copy.copy(self.allPlaylists[idx])
-                #self.currentPlaylist.printAllsongs()
-
                 self.refreshPlaylistWidget()
 
 
