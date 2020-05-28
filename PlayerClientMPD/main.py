@@ -163,6 +163,12 @@ class Playlist():
         """
         return len(self.songs)
 
+    def sortPlaylist(self):
+        """ 
+            Sort alphabetically songs
+        """
+        self.songs.sort(key=lambda x: x.name)
+
     def deleteSongT(self, songName):
         """ Removes song from playlist
 
@@ -308,6 +314,7 @@ class MusicPlayer(QWidget):
 
         #songs in main playlist
         self.listWidget.clear()
+        self.mainPlaylist.sortPlaylist()
         tempMain = self.mainPlaylist.getAllSongs()
         for song in tempMain:
             self.listWidget.addItem(song.getName())
@@ -1130,9 +1137,8 @@ class MusicPlayer(QWidget):
             Play song, two parts for mixer modul,
             from status paused to unpause and status stopped to play
         """
-        #print(self.status)
+
         if(self.status == "Played"):#must be first
-            #print("PLAY1")
             self.player.stop()
             self.player = vlc.MediaPlayer(self.pickedSongObject.getPath())
             self.player.play()
@@ -1140,13 +1146,11 @@ class MusicPlayer(QWidget):
             return
         if(self.status == "Stopped"):
             self.status = "Played"
-            #print("PLAY2")
             self.player = vlc.MediaPlayer(self.pickedSongObject.getPath())
             self.player.play()
             return
 
         if self.status == "Paused": #continues playing
-            #print("PLAY3")
             self.player.play()
             self.status = "Played"
             return
